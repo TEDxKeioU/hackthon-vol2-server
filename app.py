@@ -3,12 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import subprocess, sys
 
+from fastapi.responses import JSONResponse
+
 from schemas import PostTodo
 from models import TodoModel
 from settings import SessionLocal
 
 from sqlalchemy.orm import Session
 
+# global変数の初期化
+last_cook_data = None #cookのための変数の初期化
+last_recipe = None #recipeの初期化
 
 app = FastAPI()
 
@@ -32,29 +37,25 @@ async def root():
 
 
 ### >>>>> Cook API >>>>> ###
-last_cook_data = None
-
 # ingredientsを受け取るAPI
 def process_cook_info(info: dict):
     ingredients = info.get("ingredients")
     return ingredients
 @app.post("/cook")
-def get_cook_info(info: dict = Body(...)):
-    global last_cook_data
+def post_cook(info: dict = Body(...)):
+    global last_cook_data, last_recipe
+    last_recipe = None
+
     last_cook_data = process_cook_info(info)
     # print("Received data:", last_cook_data)
     subprocess.run([sys.executable, "cook.py"], check=True)
     return {"received": last_cook_data}
-
 @app.get("/cook")
 def get_last_cook_data():
     return {"last_cook_data": last_cook_data}
 ### <<<<< Cook API <<<<< ###
 
 ### >>>>> Recipe API >>>>> ###
-# レシピを保存する変数
-last_recipe = None
-
 @app.post("/recipe")
 def save_recipe(recipe: dict = Body(...)):
     global last_recipe
@@ -62,10 +63,15 @@ def save_recipe(recipe: dict = Body(...)):
     print("Saved Recipe:", last_recipe)
     return {"messsage": "Recipe saved successfully"}
 
-#レシピを取得するAPI
 @app.get("/recipe")
 def get_recipe():
-    return {"recipe": last_recipe}
+    headers = {"Cache-Control": "no-cache"}
+    return JSONResponse(content={"recipe": last_recipe}, headers=headers)
+
+@app.delete("/recipe")
+def delete_recipe():
+    global last_recipe
+    last_recipe = None
 ### <<<<< Recipe API <<<<< ###
 
 ### >>>>> Todo API >>>>> ###
