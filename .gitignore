@@ -333,3 +333,5 @@ ASALocalRun/
 
 # Virtual environment
 venv/
+
+.env
