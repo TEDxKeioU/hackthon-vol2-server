@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Body
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import subprocess, sys
 
 from schemas import PostTodo
 from models import TodoModel
@@ -59,6 +60,25 @@ def post_todo(
 
     return {"message": "success"}
 
+last_cook_data = None
+
+# ingredientsを受け取るAPI
+def process_cook_info(info: dict):
+    ingredients = info.get("ingredients")
+    return ingredients
+@app.post("/cook")
+def get_cook_info(info: dict = Body(...)):
+    global last_cook_data
+    last_cook_data = process_cook_info(info)
+    print("Received data:", last_cook_data)
+    subprocess.run([sys.executable, "cook.py"], check=True)
+    return {"received": last_cook_data}
+
+@app.get("/cook")
+def get_last_cook_data():
+    return {"last_cook_data": last_cook_data}
+
+
 # ToDoを削除するAPI
 @app.delete("/todo/{id}")
 def delete_todo(
@@ -70,6 +90,14 @@ def delete_todo(
     db.commit()
 
     return {"message": "success"}
+
+
+def create_todo(todo_obj: PostTodo, db):
+    db_model = TodoModel(title=todo_obj.title)
+    db.add(db_model)
+    db.commit()
+    db.refresh(db_model)
+    return db_model
 
 
 if __name__ == "__main__":
