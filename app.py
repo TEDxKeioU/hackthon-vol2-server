@@ -60,6 +60,7 @@ def post_todo(
 
     return {"message": "success"}
 
+### ----- Cook API ----- ###
 last_cook_data = None
 
 # ingredientsを受け取るAPI
@@ -70,13 +71,29 @@ def process_cook_info(info: dict):
 def get_cook_info(info: dict = Body(...)):
     global last_cook_data
     last_cook_data = process_cook_info(info)
-    print("Received data:", last_cook_data)
+    # print("Received data:", last_cook_data)
     subprocess.run([sys.executable, "cook.py"], check=True)
     return {"received": last_cook_data}
 
 @app.get("/cook")
 def get_last_cook_data():
     return {"last_cook_data": last_cook_data}
+
+### ----- Recipe API ----- ###
+# レシピを保存する変数
+last_recipe = None
+
+@app.post("/recipe")
+def save_recipe(recipe: dict = Body(...)):
+    global last_recipe
+    last_recipe = recipe.get("recipe")
+    print("Saved Recipe:", last_recipe)
+    return {"messsage": "Recipe saved successfully"}
+
+#レシピを取得するAPI
+@app.get("/recipe")
+def get_recipe():
+    return {"recipe": last_recipe}
 
 
 # ToDoを削除するAPI
@@ -99,20 +116,7 @@ def create_todo(todo_obj: PostTodo, db):
     db.refresh(db_model)
     return db_model
 
-# レシピを保存する変数
-last_recipe = None
 
-@app.post("/recipe")
-def save_recipe(recipe: dict = Body(...)):
-    global last_recipe
-    last_recipe = recipe.get("recipe")
-    print("Saved Recipe:", last_recipe)
-    return {"messsage": "Recipe saved successfully"}
-
-#レシピを取得するAPI
-@app.get("/recipe")
-def get_recipe():
-    return {"recipe": last_recipe}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
