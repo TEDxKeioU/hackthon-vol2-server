@@ -22,7 +22,7 @@ async def main():
     data = await wait_for_cook_data()
     print("Received data:", data)
 
-    chat_model = ChatOpenAI(api_key=api_key, model_name="gpt-4o", temperature=0)
+    chat_model = ChatOpenAI(api_key=api_key, model_name="gpt-4o-mini", temperature=0)
     # ingredients = input("食材を入力してください: ")
     messages = [HumanMessage(content=f"{data}を使ったレシピを提案してください")]
     response = chat_model.invoke(messages)
