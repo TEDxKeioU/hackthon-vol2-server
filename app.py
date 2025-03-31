@@ -69,8 +69,16 @@ def process_cook_info(info: dict):
 @app.post("/cook")
 def get_cook_info(info: dict = Body(...)):
     global last_cook_data
-    last_cook_data = process_cook_info(info)
+    last_cook_data = {
+        "ingredients": info.get("ingredients"),
+        "avoid": info.get("avoid"),
+        "want": info.get("want"),
+        "cookingTime": info.get("cookingTime"),
+        "temp": info.get("temp")
+    }
+
     print("Received data:", last_cook_data)
+
     subprocess.run([sys.executable, "cook.py"], check=True)
     return {"received": last_cook_data}
 
@@ -102,7 +110,7 @@ def create_todo(todo_obj: PostTodo, db):
 # レシピを保存する変数
 last_recipe = None
 
-@app.post("/recipe")
+@app.post("/cook")
 def save_recipe(recipe: dict = Body(...)):
     global last_recipe
     last_recipe = recipe.get("recipe")
