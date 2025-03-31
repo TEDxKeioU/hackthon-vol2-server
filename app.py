@@ -24,18 +24,57 @@ app.add_middleware(
     allow_headers=["*"],  # 許可するHTTPヘッダーを指定
 )
 
+### >>>>> Hello API >>>>> ###
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+### <<<<< Hello API <<<<< ###
+
+
+### >>>>> Cook API >>>>> ###
+last_cook_data = None
+
+# ingredientsを受け取るAPI
+def process_cook_info(info: dict):
+    ingredients = info.get("ingredients")
+    return ingredients
+@app.post("/cook")
+def get_cook_info(info: dict = Body(...)):
+    global last_cook_data
+    last_cook_data = process_cook_info(info)
+    # print("Received data:", last_cook_data)
+    subprocess.run([sys.executable, "cook.py"], check=True)
+    return {"received": last_cook_data}
+
+@app.get("/cook")
+def get_last_cook_data():
+    return {"last_cook_data": last_cook_data}
+### <<<<< Cook API <<<<< ###
+
+### >>>>> Recipe API >>>>> ###
+# レシピを保存する変数
+last_recipe = None
+
+@app.post("/recipe")
+def save_recipe(recipe: dict = Body(...)):
+    global last_recipe
+    last_recipe = recipe.get("recipe")
+    print("Saved Recipe:", last_recipe)
+    return {"messsage": "Recipe saved successfully"}
+
+#レシピを取得するAPI
+@app.get("/recipe")
+def get_recipe():
+    return {"recipe": last_recipe}
+### <<<<< Recipe API <<<<< ###
+
+### >>>>> Todo API >>>>> ###
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
 
 # データベースからToDo一覧を取得するAPI
 @app.get("/todo")
@@ -60,41 +99,6 @@ def post_todo(
 
     return {"message": "success"}
 
-### ----- Cook API ----- ###
-last_cook_data = None
-
-# ingredientsを受け取るAPI
-def process_cook_info(info: dict):
-    ingredients = info.get("ingredients")
-    return ingredients
-@app.post("/cook")
-def get_cook_info(info: dict = Body(...)):
-    global last_cook_data
-    last_cook_data = process_cook_info(info)
-    # print("Received data:", last_cook_data)
-    subprocess.run([sys.executable, "cook.py"], check=True)
-    return {"received": last_cook_data}
-
-@app.get("/cook")
-def get_last_cook_data():
-    return {"last_cook_data": last_cook_data}
-
-### ----- Recipe API ----- ###
-# レシピを保存する変数
-last_recipe = None
-
-@app.post("/recipe")
-def save_recipe(recipe: dict = Body(...)):
-    global last_recipe
-    last_recipe = recipe.get("recipe")
-    print("Saved Recipe:", last_recipe)
-    return {"messsage": "Recipe saved successfully"}
-
-#レシピを取得するAPI
-@app.get("/recipe")
-def get_recipe():
-    return {"recipe": last_recipe}
-
 
 # ToDoを削除するAPI
 @app.delete("/todo/{id}")
@@ -115,7 +119,7 @@ def create_todo(todo_obj: PostTodo, db):
     db.commit()
     db.refresh(db_model)
     return db_model
-
+### <<<<< Todo API <<<<< ###
 
 
 if __name__ == "__main__":
