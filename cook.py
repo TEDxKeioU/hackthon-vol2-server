@@ -26,7 +26,7 @@ async def main():
 
     chat_model = ChatOpenAI(api_key=api_key, model_name="gpt-4o-mini", temperature=0)
     # ingredients = input("食材を入力してください: ")
-    messages = [HumanMessage(content=f"{data}を使ったレシピを提案してください")]
+    messages = [HumanMessage(content=f"{data}を使ったレシピを,対話形式を避け、簡潔に提案してください。提案してください")]
     response = chat_model.invoke(messages)
     recipe = response.content
     print("Generated recipe:", recipe)
