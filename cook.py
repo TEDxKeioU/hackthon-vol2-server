@@ -8,6 +8,8 @@ from langchain.schema import HumanMessage
 load_dotenv()
 api_key = os.getenv('OPEN_API_KEY')
 
+RECIPE_API_URL = "http://localhost:8000/recipe"
+
 async def wait_for_cook_data():
     url = "http://localhost:8000/cook"  # FastAPIのエンドポイント
     async with httpx.AsyncClient() as client:
@@ -26,7 +28,12 @@ async def main():
     # ingredients = input("食材を入力してください: ")
     messages = [HumanMessage(content=f"{data}を使ったレシピを提案してください")]
     response = chat_model.invoke(messages)
-    print(response.content)
+    recipe = response.content
+    print("Generated recipe:", recipe)
+
+    # FastAPIにレシピを送信
+    async with httpx.AsyncClient() as client:
+        await client.post(RECIPE_API_URL, json={"recipe": recipe})
 
 if __name__ == "__main__":
     asyncio.run(main())

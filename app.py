@@ -99,6 +99,20 @@ def create_todo(todo_obj: PostTodo, db):
     db.refresh(db_model)
     return db_model
 
+# レシピを保存する変数
+last_recipe = None
+
+@app.post("/recipe")
+def save_recipe(recipe: dict = Body(...)):
+    global last_recipe
+    last_recipe = recipe.get("recipe")
+    print("Saved Recipe:", last_recipe)
+    return {"messsage": "Recipe saved successfully"}
+
+#レシピを取得するAPI
+@app.get("/recipe")
+def get_recipe():
+    return {"recipe": last_recipe}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
