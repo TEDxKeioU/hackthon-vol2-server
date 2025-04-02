@@ -13,6 +13,7 @@ RECIPE_API_URL = "http://localhost:8000/recipe"
 async def wait_for_cook_data():
     url = "http://localhost:8000/cook"  # FastAPIのエンドポイント
     async with httpx.AsyncClient() as client:
+        await client.delete(RECIPE_API_URL) # レシピを削除、そうじゃないと前回の物が出てしまう
         while True:
             response = await client.get(url)
             data = response.json().get("last_cook_data")
