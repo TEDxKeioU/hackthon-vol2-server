@@ -25,9 +25,26 @@ async def main():
     data = await wait_for_cook_data()
     print("Received data:", data)
 
+    ingredients = data.get("ingredients", [])
+    avoid = data.get("ingredients", {}).get("avoid", [])
+    want = data.get("ingredients", {}).get("want", [])
+    cooking_time = data.get("cookingTime")
+    temp = data.get("temp")
+
+    messages = [
+        HumanMessage(
+            content=(
+                f"{','.join(want)}を使い、{','.join(avoid)}を使わない料理レシピを、対話形式を避け、提案してください。"
+                f"以下の情報も考慮してください。\n"
+                f"【入れたい食材】: {','.join(want)}\n"
+                f"【避けたい食材】: {','.join(avoid)}\n"
+                f"【調理時間】: {cooking_time}\n"
+                f"【気温】: {temp}℃"
+            )
+        )
+    ]
+
     chat_model = ChatOpenAI(api_key=api_key, model_name="gpt-4o-mini", temperature=0)
-    # ingredients = input("食材を入力してください: ")
-    messages = [HumanMessage(content=f"{data}を使ったレシピを提案してください")]
     response = chat_model.invoke(messages)
     recipe = response.content
     print("Generated recipe:", recipe)
