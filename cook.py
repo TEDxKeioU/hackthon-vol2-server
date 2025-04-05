@@ -23,7 +23,7 @@ async def wait_for_cook_data():
 
 async def main():
     data = await wait_for_cook_data()
-    print("Received data:", data)
+    print("Received data:", "cook.py", data)
 
     ingredients = data.get("ingredients", [])
     avoid = data.get("ingredients", {}).get("avoid", [])
@@ -34,16 +34,26 @@ async def main():
     messages = [
         HumanMessage(
             content=(
-                f"{','.join(want)}を使い、{','.join(avoid)}を使わない料理レシピを、対話形式を避け、提案してください。"
+                f"{','.join(want)}を使い、{','.join(avoid)}を使わない料理レシピを提案してください。"
                 f"以下の情報も考慮してください。\n"
                 f"【入れたい食材】: {','.join(want)}\n"
                 f"【避けたい食材】: {','.join(avoid)}\n"
                 f"【調理時間】: {cooking_time}\n"
-                f"【気温】: {temp}℃"
+                f"【気温】（ユーザがこの気温の下でどういう料理を食べたいかを考えてください）: {temp}℃\n"
+                f"対話形式は避けてください。又、レシピは日本語で書いてください。\n"
+                f"【入れたい食材】と【避けたい食材】は、必ず守ってください。"
+                f"【調理時間】は、回答を行う際に、必ず一番上に書いてください。\n"
+                f"以下、回答形式についての説明です。必ず守ってください。"
+                f"# レシピ名\n"
+                f"[調理時間]\n"
+                f"[材料]\n"
+                f"[手順]\n"
+                f"[注意点やアピールポイント]\n"
             )
         )
     ]
 
+    print(messages)
     chat_model = ChatOpenAI(api_key=api_key, model_name="gpt-4o-mini", temperature=0)
     response = chat_model.invoke(messages)
     recipe = response.content
