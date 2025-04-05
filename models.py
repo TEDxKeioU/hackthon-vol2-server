@@ -15,7 +15,7 @@ class TodoModel(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(String, primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
@@ -25,6 +25,6 @@ class User(Base):
 class Prompt_history(Base):
     __tablename__ = 'prompt_history'
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, nullable=False)
     r_recipe_name = Column(String, nullable=False)
