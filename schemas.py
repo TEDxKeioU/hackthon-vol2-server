@@ -17,6 +17,10 @@ class UserResponse(BaseModel):
     name: str
     email: EmailStr
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 class PromptHistoryCreate(BaseModel):
     user_id: str
     r_recipe_name: str

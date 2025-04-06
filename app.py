@@ -5,7 +5,7 @@ import subprocess, sys
 
 from fastapi.responses import JSONResponse
 
-from schemas import PostTodo, UserCreate, UserResponse, PromptHistoryCreate, PromptHistoryResponse
+from schemas import PostTodo, UserCreate, UserResponse, PromptHistoryCreate, PromptHistoryResponse, UserLogin
 from models import TodoModel, User, Prompt_history
 from settings import SessionLocal
 
@@ -149,6 +149,35 @@ def get_user(user_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 ### <<<<< User API <<<<< ###
+
+### >>>>> Sign up API >>>>> ###
+@app.post("/signup")
+def signup(user: UserCreate, db: Session = Depends(get_db)):
+
+    hashed_password = pwd_context.hash(user.password)
+
+    db_user = User(
+        user_id=user.user_id,
+        name=user.name,
+        email=user.email,
+        password_digest=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    print("User created:", db_user.user_id)
+    return JSONResponse(content={"message": "success"})
+### <<<<< Sign up API <<<<< ###
+
+### >>>>> Login API >>>>> ###
+@app.post("/login")
+def login(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if db_user is None or not pwd_context.verify(user.password, db_user.password_digest):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return JSONResponse(content={"message": "success", "user_id": db_user.user_id})
+### <<<<< Login API <<<<< ###
 ### >>>>> Prompt History API >>>>> ###
 @app.post("/prompt-history", response_model=PromptHistoryResponse)
 def create_prompt_history(
