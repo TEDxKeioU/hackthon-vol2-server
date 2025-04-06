@@ -335,3 +335,5 @@ ASALocalRun/
 venv/
 
 .env
+
+.sqlite
